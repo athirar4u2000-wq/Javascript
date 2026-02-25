@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Bot</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+}
+
+.container{
+    width:420px;
+    background:rgba(255,255,255,0.05);
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+h1{text-align:center;margin-bottom:10px;}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+}
+
+.categories{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.categories button{
+    flex:1 1 45%;
+    margin:5px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#34495e;
+    color:white;
+}
+
+.categories button.active{background:#00c6ff;}
+
+.start-btn{
+    width:100%;
+    padding:12px;
+    background:#00c6ff;
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.quiz-box{display:none;}
+
+.option{
+    background:#34495e;
+    padding:10px;
+    margin:8px 0;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.option:hover{background:#00c6ff;}
+
+.option.correct{background:#2ecc71 !important;}
+.option.wrong{background:#e74c3c !important;}
+
+.timer{text-align:right;font-size:14px;}
+.timer.warning{color:#f1c40f;}
+.timer.danger{color:#e74c3c;font-weight:bold;}
+
+.score-board{margin-top:15px;font-size:14px;}
+
+.clear-btn{
+    width:100%;
+    margin-top:10px;
+    padding:8px;
+    background:#e74c3c;
+    border:none;
+    border-radius:8px;
+    color:white;
+    cursor:pointer;
+}
+.clear-btn:hover{background:#c0392b;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="home">
+<h1>QuizMaster Pro</h1>
+<input type="text" id="username" placeholder="Enter your name">
+
+<div class="categories">
+<button onclick="selectCategory('general',this)">General</button>
+<button onclick="selectCategory('science',this)">Science</button>
+<button onclick="selectCategory('history',this)">History</button>
+<button onclick="selectCategory('technology',this)">Technology</button>
+</div>
+
+<button class="start-btn" onclick="startQuiz()">Start Quiz</button>
+
+<div class="score-board">
+<div id="highScores"></div>
+<button onclick="clearHighScores()" class="clear-btn">Clear High Scores</button>
+</div>
+</div>
+
+<!-- Moved OUTSIDE home -->
+<div class="quiz-box" id="quizBox">
+<div class="timer">Time Left: <span id="time">15</span>s</div>
+<h3 id="question"></h3>
+<div id="options"></div>
+</div>
+
+</div>
+
+<script>
+let selectedCategory = "";
+let currentQuestion = 0;
+let score = 0;
+let timer = null;
+let timeLeft = 15;
+let acceptingAnswers = true;
+
+const questions = {
+general:[
+{q:"What is the capital of India?",a:["Delhi","Mumbai","Chennai","Kolkata"],c:0},
+{q:"Which planet is known as Red Planet?",a:["Earth","Mars","Jupiter","Venus"],c:1}
+],
+science:[
+{q:"Water chemical formula?",a:["H2O","CO2","O2","NaCl"],c:0}
+],
+history:[
+{q:"Who discovered India?",a:["Columbus","Vasco da Gama","Newton","Akbar"],c:1}
+],
+technology:[
+{q:"What does CPU stand for?",a:["Central Process Unit","Central Processing Unit","Computer Personal Unit","Central Processor Utility"],c:1}
+]
+};
+
+function selectCategory(cat,btn){
+    selectedCategory = cat;
+    document.querySelectorAll(".categories button")
+    .forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+}
+
+function startQuiz(){
+    const name = document.getElementById("username").value.trim();
+    if(name==="" || selectedCategory===""){
+        alert("Enter name & select category!");
+        return;
+    }
+
+    document.getElementById("home").style.display="none";
+    document.getElementById("quizBox").style.display="block";
+
+    currentQuestion = 0;
+    score = 0;
+    loadQuestion();
+}
+
+function loadQuestion(){
+    clearInterval(timer);
+
+    if(currentQuestion >= questions[selectedCategory].length){
+        endQuiz();
+        return;
+    }
+
+    acceptingAnswers = true;
+    const qObj = questions[selectedCategory][currentQuestion];
+
+    document.getElementById("question").innerText =
+        `Question ${currentQuestion+1}/${questions[selectedCategory].length}: ${qObj.q}`;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML="";
+
+    qObj.a.forEach((option,index)=>{
+        const div = document.createElement("div");
+        div.classList.add("option");
+        div.innerText = option;
+        div.onclick = ()=>checkAnswer(index);
+        optionsDiv.appendChild(div);
+    });
+
+    startTimer();
+}
+
+function checkAnswer(index){
+    if(!acceptingAnswers) return;
+    acceptingAnswers = false;
+    clearInterval(timer);
+
+    const correctIndex = questions[selectedCategory][currentQuestion].c;
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((opt,i)=>{
+        if(i === correctIndex) opt.classList.add("correct");
+        if(i === index && index !== correctIndex) opt.classList.add("wrong");
+    });
+
+    if(index === correctIndex) score += 10;
+
+    setTimeout(()=>{
+        currentQuestion++;
+        loadQuestion();
+    },1000);
+}
+
+function startTimer(){
+    timeLeft = 15;
+    const timerElement = document.querySelector(".timer");
+    const timeText = document.getElementById("time");
+
+    timerElement.classList.remove("warning","danger");
+    timeText.innerText = timeLeft;
+
+    timer = setInterval(()=>{
+        timeLeft--;
+        timeText.innerText = timeLeft;
+
+        if(timeLeft <= 10 && timeLeft > 5){
+            timerElement.classList.add("warning");
+            timerElement.classList.remove("danger");
+        }
+
+        if(timeLeft <= 5){
+            timerElement.classList.add("danger");
+            timerElement.classList.remove("warning");
+        }
+
+        if(timeLeft <= 0){
+            clearInterval(timer);
+            checkAnswer(-1); // auto move
+        }
+
+    },1000);
+}
+
+function endQuiz(){
+    clearInterval(timer);
+    alert(`Quiz Finished!\nScore: ${score}`);
+    saveHighScore();
+    document.getElementById("quizBox").style.display="none";
+    document.getElementById("home").style.display="block";
+    displayHighScores();
+}
+
+function saveHighScore(){
+    let scores = JSON.parse(localStorage.getItem("scores")) || [];
+    scores.push({
+        name: document.getElementById("username").value,
+        score: score
+    });
+    scores.sort((a,b)=>b.score-a.score);
+    localStorage.setItem("scores", JSON.stringify(scores.slice(0,5)));
+}
+
+function displayHighScores(){
+    let scores = JSON.parse(localStorage.getItem("scores")) || [];
+    let html = "<h3>High Scores</h3>";
+
+    if(scores.length === 0){
+        html += "<div>No scores yet</div>";
+    } else {
+        scores.forEach(s=>{
+            html += `<div>${s.name} - ${s.score} pts</div>`;
+        });
+    }
+
+    document.getElementById("highScores").innerHTML = html;
+}
+
+function clearHighScores(){
+    if(confirm("Clear high scores?")){
+        localStorage.removeItem("scores");
+        displayHighScores();
+    }
+}
+
+displayHighScores();
+</script>
+</body>
+</html>

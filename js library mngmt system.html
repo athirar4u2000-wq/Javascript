@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Library Book Issue System</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background:#eef2f5;
+}
+
+.top{
+    display:flex;
+    gap:20px;
+}
+
+.box{
+    background:#fff;
+    border:1px solid #c9c5c5;
+    padding:20px;
+    border-radius:10px;
+    width:50%;
+}
+
+label{
+    font-weight:bold;
+    display:block;
+    margin-bottom:5px;
+}
+
+input{
+    width:100%;
+    padding:8px;
+    margin-bottom:12px;
+}
+
+.row{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.add{ 
+    background:#6d03c4; 
+    color:white; 
+}
+.issue{
+     background:#15803d; 
+     color:white; 
+    }
+.clear{ 
+    background:#111827; 
+    color:white; 
+}
+
+.error{
+    font-size:0.85em;
+    color:#fa0101;
+    margin-top:8px;
+}
+
+.section{
+    background:#fff;
+    margin-top:25px;
+    padding:15px;
+    border-radius:10px;
+    border:1px solid #c9c5c5;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:left;
+}
+
+th{
+    background:#f3f4f6;
+}
+
+.count{
+    float:right;
+    color:#555;
+}
+</style>
+</head>
+
+<body>
+<h2><center>Library Book Issue System</h2></center>
+
+<div class="top">
+
+<div class="box">
+<h2>Add Book</h2>
+
+<label>Book Name</label>
+<input id="bookName" placeholder="Enter book name" style="width: 570px;">
+
+<div class="row">
+<div style="flex:1">
+<label>Author</label>
+<input id="authorName" placeholder="Enter author name" style="width: 270px;">
+</div>
+<div style="flex:1">
+<label>Book ID</label>
+<input id="bookId" placeholder="Eg: B101" style="width: 270px;">
+</div>
+</div>
+
+<button class="add" onclick="addBook()">Add Book</button>
+<button class="clear" onclick="clearAdd()">Clear</button>
+
+<p id="addError" class="error" style="color: black;">Validation: Book ID must be unique</p>
+</div>
+
+<div class="box">
+<h2>Issue Book to Student</h2>
+
+<label>Book ID</label>
+<input id="issueBookId" placeholder="Enter Book ID to issue" style="width: 570px;">
+
+<div class="row">
+<div style="flex:1">
+<label>Student Name</label>
+<input id="studentName" placeholder="Enter student name" style="width: 270px;">
+</div>
+<div style="flex:1">
+<label>Roll No</label>
+<input id="rollNo" placeholder="Enter roll number" style="width: 270px;">
+</div>
+</div>
+
+<button class="issue" onclick="issueBook()">Issue Book</button>
+<button class="clear" onclick="clearIssue()">Clear</button>
+
+<p id="issueError" class="error" style="color: black;">Validation: Student name cannot be empty, book must exist, not already issued
+</p>
+</div>
+
+</div>
+
+<div class="section">
+<h3>Available Books <span class="count" id="availCount">0 Books</span></h3>
+
+<table>
+<thead>
+<tr>
+<th>S.No</th>
+<th>Book ID</th>
+<th>Book Name</th>
+<th>Author</th>
+<th>Status</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody id="availableTable">
+<tr><td colspan="6">No available books found.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section">
+<h3>Issued Books <span class="count" id="issueCount">0 Issued</span></h3>
+
+<table>
+<thead>
+<tr>
+<th>S.No</th>
+<th>Book ID</th>
+<th>Book Name</th>
+<th>Student Name</th>
+<th>Roll No</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="issuedTable">
+<tr><td colspan="6">No issued books found.</td></tr>
+</tbody>
+</table>
+</div>
+
+<script>
+let availableBooks = [];
+let issuedBooks = [];
+let students = [];
+let books=[];
+
+function addBook(){
+    const name = bookName.value.trim();
+    const author = authorName.value.trim();
+    const id = bookId.value.trim();
+
+    try{
+        if(!name || !author || !id)
+            throw "All fields are required!";
+
+        if(availableBooks.find(b=>b.id===id) || issuedBooks.find(b=>b.id===id))
+            throw "Book ID already exists!";
+
+        availableBooks.push({id,name,author});
+        addError.innerText = "Book added successfully";
+        clearAdd();
+
+    }
+    catch(err){
+        addError.innerText = err;
+    }
+    finally{
+        updateTables();
+    }
+}
+
+function issueBook(){
+    const id = issueBookId.value.trim();
+    const student = studentName.value.trim();
+    const roll = rollNo.value.trim();
+
+    try{
+        if(!student)
+            throw "Student name required!";
+               
+      
+                let exstingstudent = students.find(s => s.roll.toLowerCase() === roll.toLowerCase());
+                if(exstingstudent){
+                    if(exstingstudent.student.toLowerCase() != student.toLowerCase()){
+                        throw "roll number missmatch! student with roll number" +roll+ "is already registerd as" +exstingstudent.studentName+ ".";
+                        
+                    }
+                }
+                else{
+                    students.push({roll: roll,student: student});
+                }
+
+        const index = availableBooks.findIndex(b=>b.id===id);
+
+        if(index === -1)
+            throw "Book ID not found!";
+
+        if(issuedBooks.find(b=>b.id===id))
+            throw "Book already issued!";
+
+        const book = availableBooks.splice(index,1)[0];
+        issuedBooks.push({...book,student,roll});
+        issueError.innerText = "Book issued successfully";
+        clearIssue();
+
+    }
+    catch(err){
+        issueError.innerText = err;
+    }
+    finally{
+        updateTables();
+    }
+}
+
+function deleteBook(bookId) {
+try {
+    let bookIndex = availableBooks.findIndex(
+    b => b.id.toLowerCase() === bookId.toLowerCase());
+
+    if (bookIndex === -1) {
+    throw "Book not found!";
+    }
+
+    availableBooks.splice(bookIndex, 1);
+    alert(" Book deleted successfully!");
+
+    } 
+    catch (err) {
+    alert(" " + err);
+    } 
+    finally {
+    updateTables();
+    }
+    }
+
+function returnBook(id){
+    try{
+        const index = issuedBooks.findIndex(b=>b.id===id);
+        if(index === -1)
+            throw "Book not found!";
+
+        const book = issuedBooks.splice(index,1)[0];
+        delete book.student;
+        delete book.roll;
+        availableBooks.push(book);
+
+    }
+    catch(err){
+        alert(err);
+    }
+    finally{
+        updateTables();
+    }
+}
+
+function updateTables(){
+    availCount.innerText = availableBooks.length + " Books";
+    issueCount.innerText = issuedBooks.length + " Issued";
+
+    availableTable.innerHTML = availableBooks.length ?
+    availableBooks.map((b,i)=>`
+    <tr>
+        <td>${i+1}</td>
+        <td>${b.id}</td>
+        <td>${b.name}</td>
+        <td>${b.author}</td>
+        <td style="color: green;">Available</td>
+        <td><button onclick="deleteBook('${b.id}')" style="color:white; background:black;">Delete</button></td>
+    </tr>`).join("") :
+    `<tr><td colspan="6">No available books found.</td></tr>`;
+
+    issuedTable.innerHTML = issuedBooks.length ?
+    issuedBooks.map((b,i)=>`
+    <tr>
+        <td>${i+1}</td>
+        <td>${b.id}</td>
+        <td>${b.name}</td>
+        <td>${b.student}</td>
+        <td>${b.roll}</td>
+        <td><button onclick="returnBook('${b.id}')" style="color: white; background: black;">Return</button></td>
+    </tr>`).join("") :
+    `<tr><td colspan="6">No issued books found.</td></tr>`;
+}
+
+function clearAdd(){
+    bookName.value = authorName.value = bookId.value = "";
+}
+
+function clearIssue(){
+    issueBookId.value = studentName.value = rollNo.value = "";
+}
+</script>
+
+</body>
+</html>

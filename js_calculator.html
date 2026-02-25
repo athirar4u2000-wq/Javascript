@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<style>
+
+body{
+    background:white;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Segoe UI;
+}
+
+.calculator{
+    width:320px;
+    background:#1c2541;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:white;
+    margin-bottom:10px;
+}
+
+.logo{
+    font-weight:bold;
+    font-size:20px;
+}
+
+.mode button{
+    border:none;
+    padding:5px 10px;
+    margin-left:5px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.mode .active{
+    background:#00d2ff;
+    color:black;
+}
+
+.display{
+    background:#4d5c8a;
+    color:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:10px;
+    text-align:right;
+}
+
+#expression{
+    font-size:14px;
+    color:#aaa;
+}
+
+#result{
+    font-size:28px;
+}
+
+.buttons{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.buttons button{
+    padding:15px;
+    font-size:16px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.scientific{
+    margin-bottom:10px;
+}
+
+.hidden{
+    display:none;
+}
+
+.blue{
+    background:#00b4d8;
+}
+
+.green{
+    background:#06d6a0;
+}
+
+.red{
+    background:#ef476f;
+}
+
+.yellow{
+    background:#ffd166;
+}
+
+</style>
+</head>
+<body>
+
+<div class="calculator">
+
+    <div class="header">
+        <div class="logo">Calculator</div>
+
+        <div class="mode">
+            <button id="basicBtn" class="active">Basic</button>
+            <button id="sciBtn">Scientific</button>
+        </div>
+    </div>
+
+    <div class="display">
+        <div id="expression"></div>
+        <div id="result">0</div>
+    </div>
+
+    <div id="scientific" class="buttons scientific hidden">
+
+        <button onclick="func('sin')">sin</button>
+        <button onclick="func('cos')">cos</button>
+        <button onclick="func('tan')">tan</button>
+        <button onclick="func('log')">log</button>
+
+        <button onclick="func('sqrt')">√</button>
+        <button onclick="insert('Math.PI')">π</button>
+        <button onclick="square()">x²</button>
+        <button onclick="insert('Math.E')">e</button>
+
+    </div>
+
+    <div class="buttons">
+
+        <button class="red" onclick="clearDisplay()">Del</button>
+        <button class="yellow" onclick="del()">C</button>
+        <button class="yellow" onclick="insert('%')">%</button>
+        <button class="blue" onclick="insert('/')">÷</button>
+
+        <button onclick="insert('7')">7</button>
+        <button onclick="insert('8')">8</button>
+        <button onclick="insert('9')">9</button>
+        <button class="blue" onclick="insert('*')">x</button>
+
+        <button onclick="insert('4')">4</button>
+        <button onclick="insert('5')">5</button>
+        <button onclick="insert('6')">6</button>
+        <button class="blue" onclick="insert('-')">-</button>
+
+        <button onclick="insert('1')">1</button>
+        <button onclick="insert('2')">2</button>
+        <button onclick="insert('3')">3</button>
+        <button class="blue" onclick="insert('+')">+</button>
+
+        <button onclick="insert('0')" class="zero">0</button>
+        <button onclick="insert('.')">.</button>
+        <button class="yellow" onclick="insertBracket()">()</button>
+        <button class="green" onclick="calculate()">=</button>
+
+    </div>
+
+</div>
+<script>
+let expression = "";
+
+const expDisplay = document.getElementById("expression");
+const resultDisplay = document.getElementById("result");
+
+function updateDisplay(){
+    expDisplay.innerText = expression;
+}
+
+function insert(value){
+    expression += value;
+    updateDisplay();
+}
+
+function clearDisplay(){
+    expression="";
+    updateDisplay();
+    resultDisplay.innerText="0";
+}
+
+function del(){
+    expression = expression.slice(0,-1);
+    updateDisplay();
+}
+
+function calculate(){
+    try{
+        let result = eval(expression);
+        resultDisplay.innerText = result;
+    }catch{
+        resultDisplay.innerText = "Error";
+    }
+}
+
+function func(name){
+
+    try{
+
+        let val = eval(expression);
+
+        let result;
+
+        switch(name){
+
+            case "sin":
+            result = Math.sin(val*Math.PI/180);
+            break;
+
+            case "cos":
+            result = Math.cos(val*Math.PI/180);
+            break;
+
+            case "tan":
+            result = Math.tan(val*Math.PI/180);
+            break;
+
+            case "log":
+            result = Math.log10(val);
+            break;
+
+            case "sqrt":
+            result = Math.sqrt(val);
+            break;
+
+        }
+
+        resultDisplay.innerText = result;
+
+    }catch{
+        resultDisplay.innerText="Error";
+    }
+}
+
+function square(){
+    try{
+        let val = eval(expression);
+        resultDisplay.innerText = val*val;
+    }catch{
+        resultDisplay.innerText="Error";
+    }
+}
+
+const basicBtn=document.getElementById("basicBtn");
+const sciBtn=document.getElementById("sciBtn");
+const sciDiv=document.getElementById("scientific");
+
+basicBtn.onclick=()=>{
+    sciDiv.classList.add("hidden");
+    basicBtn.classList.add("active");
+    sciBtn.classList.remove("active");
+}
+
+sciBtn.onclick=()=>{
+    sciDiv.classList.remove("hidden");
+    sciBtn.classList.add("active");
+    basicBtn.classList.remove("active");
+}
+
+function insertBracket()
+{ let open = (expression.match(/\(/g) || []).length; 
+let close = (expression.match(/\)/g) || []).length; 
+if(open > close){ expression += ")"; 
+}
+else{ 
+    expression += "(";
+    } 
+    updateDisplay(); 
+    }
+</script>
+
+</body>
+</html>

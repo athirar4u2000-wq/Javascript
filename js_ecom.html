@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Easy</title>
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f4f6f8;
+}
+
+#welcome{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    text-align:center;
+
+    background-size:cover;
+    background-position:center;
+    animation:bgChange 15s infinite;
+}
+
+@keyframes bgChange{
+
+0%{
+background-image:url("https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da");
+}
+
+25%{
+background-image:url("https://wallpapers.com/images/hd/spring-perfume-2500-x-1406-wallpaper-ow6rtfyl5horb78u.jpg");
+}
+
+50%{
+background-image:url("https://images.unsplash.com/photo-1523275335684-37898b6baf30");
+}
+
+75%{
+background-image:url("https://images.unsplash.com/photo-1512436991641-6745cdb1723f");
+}
+
+100%{
+background-image:url("https://t3.ftcdn.net/jpg/03/07/47/68/360_F_307476842_JyRvlsKNkG2bBYkXr5NbzSfiUlWR4sPE.jpg");
+}
+
+}
+
+#welcome::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+z-index:0;
+}
+
+#welcome h1, #welcome p, #welcome button{
+position:relative;
+z-index:1;
+}
+
+#getStartedBtn{
+    padding:12px 24px;
+    font-size:18px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:white;
+    color:#2c3e50;
+    margin-top:20px;
+}
+
+#shop{
+    display:none;
+}
+
+header{
+    background:#2c3e50;
+    color:white;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.cart-icon{
+    cursor:pointer;
+    font-size:18px;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+.product{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    text-align:center;
+    transition:0.3s;
+    overflow:hidden;   
+}
+
+.product img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    border-radius:6px;
+    transition: transform 0.4s ease;
+}
+
+.product:hover img{
+    transform: scale(1.2);
+}
+
+button{
+    background:#2c3e50;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    cursor:pointer;
+    border-radius:5px;
+    margin-top:8px;
+}
+
+button:hover{
+    background:#2980b9;
+}
+
+.cart{
+    position:fixed;
+    right:-350px;
+    top:0;
+    width:320px;
+    height:100%;
+    background:white;
+    box-shadow:-2px 0 8px rgba(0,0,0,0.2);
+    padding:20px;
+    transition:0.3s;
+    overflow-y:auto;
+}
+
+.cart.active{
+    right:0;
+}
+
+.cart-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.cart-item{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.cart-item img{
+    width:60px;
+    height:60px;
+    border-radius:6px;
+}
+
+.cart-details{
+    flex:1;
+}
+
+.qty-control{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.qty-control button{
+    background:#ecf0f1;
+    color:black;
+    width:25px;
+    height:25px;
+}
+
+.delete-btn{
+    cursor:pointer;
+    color:red;
+}
+
+.checkout-btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:linear-gradient(to right,#36d1dc,#5b86e5);
+    border:none;
+    color:white;
+    border-radius:25px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.checkout-modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.checkout-box{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    width:350px;
+    position:relative;
+}
+
+.close-btn{
+    position:absolute;
+    right:15px;
+    top:10px;
+    font-size:22px;
+    cursor:pointer;
+}
+
+.checkout-box input,
+.checkout-box textarea{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.place-order-btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    font-size:16px;
+    color:white;
+    cursor:pointer;
+    background:linear-gradient(to right,#36d1dc,#5b86e5);
+}
+
+footer{
+    background:#2c3e50;
+    color:white;
+    padding:30px 20px;
+    margin-top:40px;
+}
+
+.footer-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.footer-section h3{
+    margin-bottom:10px;
+    border-bottom:2px solid #5b86e5;
+    display:inline-block;
+    padding-bottom:5px;
+}
+
+.footer-section p{
+    margin:6px 0;
+    font-size:14px;
+}
+
+.footer-section a{
+    color:#ecf0f1;
+    text-decoration:none;
+}
+
+.footer-section a:hover{
+    text-decoration:underline;
+}
+
+.footer-bottom{
+    text-align:center;
+    margin-top:20px;
+    border-top:1px solid #555;
+    padding-top:10px;
+    font-size:14px;
+}
+.filter-bar{
+    padding:15px;
+    text-align:center;
+    background:#f9fafa;
+}
+
+.filter-bar button{
+    margin:5px;
+    padding:10px 18px;
+    border:none;
+    border-radius:20px;
+    background:#2c3e50;
+    color: #fcfdfd;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.filter-bar button:hover{
+    background:#f8f9fa;
+    color:#2c3e50;
+}
+
+</style>
+</head>
+<body>
+
+<div id="welcome">
+    <h1>Welcome to ShopEasy</h1>
+    <p>Your simple online shopping experience</p>
+    <button id="getStartedBtn" onclick="startShop()">Get Started</button>
+</div>
+
+<div id="shop">
+
+<header>
+<h2>ShopEasy</h2>
+<div class="cart-icon" onclick="toggleCart()">
+🛒 Cart (<span id="cart-count">0</span>)
+</div>
+</header>
+<div class="filter-bar">
+<button onclick="filterProducts('all')">All</button>
+<button onclick="filterProducts('electronics')">Electronics</button>
+<button onclick="filterProducts('cosmetics')">Cosmetics</button>
+<button onclick="filterProducts('fashion')">Fashion</button>
+</div>
+
+<section class="products">
+
+<div class="product" data-category="electronics">
+
+<img src="https://m.media-amazon.com/images/I/71ZDY57yTQL._SL1500_.jpg">
+<h3>Smartphone</h3>
+<p class="price" data-price="15000">₹15000</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="electronics">
+
+<img src="https://shop.zebronics.com/cdn/shop/files/Zeb-Thunderpro-blue-pic-1.jpg">
+<h3>Headphones</h3>
+<p class="price" data-price="2000">₹2000</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="electronics">
+
+<img src="https://images-cdn.ubuy.co.in/6937da0148b931efd004e538-magegee-mini-60-gaming-keyboard-rgb.jpg">
+<h3>Keyboard</h3>
+<p class="price" data-price="1500">₹1500</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="fashion">
+
+<img src="https://t3.ftcdn.net/jpg/13/21/49/48/360_F_1321494844_Mb1eF6V9TeWqh4DtDz2Pc9jqgjRMxkCQ.jpg">
+<h3>Dress</h3>
+<p class="price" data-price="799">₹799</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="fashion">
+
+<img src="https://safaribags.com/cdn/shop/files/Trio-15_BP_N_Teal_02_1024x.jpg?v=1707670998">
+<h3>Bags</h3>
+<p class="price" data-price="1499">₹1499</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="fashion">
+
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToRy1Dvj6Zf-a9MG84HH8ZSdxr0NfvVEiv4g&s">
+<h3>Shoes</h3>
+<p class="price" data-price="2499">₹2499</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="electronics">
+
+<img src="https://dynamic.zacdn.com/-vNaYTv-6Fs2KmGhsIQEvyvjF9A=/filters:quality(70):format(webp)/https://static-my.zacdn.com/p/casio-watches-3375-8058133-1.jpg">
+<h3>Watches</h3>
+<p class="price" data-price="2999">₹2999</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="cosmetics">
+
+<img src="https://5.imimg.com/data5/ECOM/Default/2023/6/320801987/LU/ZL/IM/40788096/62001932-10-image-500x500.jpg">
+<h3>Lipstick</h3>
+<p class="price" data-price="499">₹499</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="cosmetics">
+
+<img src="https://www.babyforest.in/cdn/shop/products/Untitled-1_24ba076b-e68e-46fc-8e3c-366c70b9ec38.jpg?v=1670997576">
+<h3>Face Cream</h3>
+<p class="price" data-price="899">₹899</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+<div class="product" data-category="cosmetics">
+
+<img src="https://images.meesho.com/images/products/407825482/hwzsw_512.webp?width=512">
+<h3>Perfume</h3>
+<p class="price" data-price="1299">₹1299</p>
+<button onclick="addToCart(this)">Add to Cart</button>
+</div>
+
+</section>
+
+<div class="cart" id="cart">
+
+<div class="cart-header">
+<h2>Your Cart</h2>
+<span onclick="toggleCart()">x</span>
+</div>
+
+<div id="cart-items"></div>
+
+<h3>Total: ₹<span id="cart-total">0</span></h3>
+
+<button class="checkout-btn" onclick="checkout()">
+Checkout
+</button>
+
+</div>
+
+</div>
+
+<div id="checkoutModal" class="checkout-modal">
+
+<div class="checkout-box">
+
+<span class="close-btn" onclick="closeCheckout()">x</span>
+
+<h2>Checkout</h2>
+
+<label>Name</label>
+<input type="text" id="custName" placeholder="Enter your name">
+
+<label>Address</label>
+<textarea id="custAddress" placeholder="Enter your address"></textarea>
+
+<label>Card Number</label>
+<input type="text" id="cardNumber" placeholder="Enter card number">
+
+<button class="place-order-btn" onclick="placeOrder()">
+Place Order
+</button>
+
+</div>
+</div>
+<footer>
+
+<div class="footer-container">
+
+    <div class="footer-section">
+        <h3>ShopEasy</h3>
+        <p>Your trusted online shopping platform.</p>
+        <p>Quality products at best prices.</p>
+    </div>
+
+    <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p> Email: shopeasy@gmail.com</p>
+        <p> Phone: +91 98765 43210</p>
+        <p> Address: Hi-lite mall, Kozhikode, Kerala, India</p>
+    </div>
+
+    <div class="footer-section">
+        <h3>Quick Links</h3>
+        <p><a href="#">Home</a></p>
+        <p><a href="#">Products</a></p>
+        <p><a href="#">Cart</a></p>
+        <p><a href="#">Contact</a></p>
+    </div>
+
+</div>
+
+<div class="footer-bottom">
+    <p>© 2026 ShopEasy. All Rights Reserved.</p>
+</div>
+</footer>
+
+<script>
+
+let cart = [];
+
+function startShop(){
+document.getElementById("welcome").style.display="none";
+document.getElementById("shop").style.display="block";
+}
+
+function addToCart(button){
+
+let product=button.parentElement;
+
+let name=product.querySelector("h3").innerText;
+let price=parseInt(product.querySelector(".price").dataset.price);
+let img=product.querySelector("img").src;
+
+let existing=cart.find(item=>item.name===name);
+
+if(existing){
+existing.qty++;
+}
+else{
+cart.push({name,price,img,qty:1});
+}
+
+updateCart();
+}
+
+function updateCart(){
+
+let items=document.getElementById("cart-items");
+let total=document.getElementById("cart-total");
+let count=document.getElementById("cart-count");
+
+items.innerHTML="";
+
+let sum=0;
+let totalItems=0;
+
+cart.forEach((item,index)=>{
+
+sum+=item.price*item.qty;
+totalItems+=item.qty;
+
+items.innerHTML+=`
+
+<div class="cart-item">
+
+<img src="${item.img}">
+
+<div class="cart-details">
+
+<h4>${item.name}</h4>
+
+<p>₹${item.price}</p>
+
+<div class="qty-control">
+
+<button onclick="decreaseQty(${index})">-</button>
+
+${item.qty}
+
+<button onclick="increaseQty(${index})">+</button>
+
+</div>
+
+</div>
+
+<div class="delete-btn" onclick="removeItem(${index})">
+🗑
+</div>
+
+</div>
+
+`;
+
+});
+
+total.innerText=sum;
+count.innerText=totalItems;
+
+}
+
+function increaseQty(i){
+cart[i].qty++;
+updateCart();
+}
+
+function decreaseQty(i){
+
+if(cart[i].qty>1)
+cart[i].qty--;
+else
+cart.splice(i,1);
+
+updateCart();
+}
+
+function removeItem(i){
+cart.splice(i,1);
+updateCart();
+}
+
+function toggleCart(){
+document.getElementById("cart").classList.toggle("active");
+}
+
+function checkout(){
+
+if(cart.length==0){
+alert("Cart is empty");
+return;
+}
+
+document.getElementById("checkoutModal").style.display="flex";
+
+}
+
+function closeCheckout(){
+document.getElementById("checkoutModal").style.display="none";
+}
+
+function placeOrder(){
+
+let name=document.getElementById("custName").value;
+let address=document.getElementById("custAddress").value;
+let card=document.getElementById("cardNumber").value;
+
+if(name==""||address==""||card==""){
+alert("Please fill all fields");
+return;
+}
+
+alert("Order placed successfully!");
+
+cart=[];
+updateCart();
+
+closeCheckout();
+
+}
+function filterProducts(category){
+
+let products=document.querySelectorAll(".product");
+
+products.forEach(product=>{
+
+if(category==="all"){
+product.style.display="block";
+}
+else{
+if(product.dataset.category===category){
+product.style.display="block";
+}
+else{
+product.style.display="none";
+}
+}
+
+});
+
+}
+
+</script>
+</body>
+</html>

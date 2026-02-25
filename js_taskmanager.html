@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Task Manager</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:#fff;
+}
+.container{
+    width:380px;
+    padding:30px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(14px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+h1{
+    text-align:center;
+    font-weight:600;
+}
+.subtitle{
+    text-align:center;
+    font-size:13px;
+    color:#cfd8dc;
+    margin-bottom:20px;
+}
+.input-group{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+}
+input{
+    flex:1;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.2);
+    background:transparent;
+    color:#fff;
+    outline:none;
+}
+input::placeholder{
+    color:#bbb;
+}
+.add-btn{
+    padding:12px 16px;
+    border:none;
+    border-radius:10px;
+    background:#2dd4bf;
+    color:#003333;
+    font-weight:600;
+    cursor:pointer;
+}
+.filters{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+}
+.filter-btn{
+    flex:1;
+    padding:8px;
+    border-radius:20px;
+    border:none;
+    background:rgba(255,255,255,0.1);
+    color:#fff;
+    cursor:pointer;
+}
+.filter-btn.active{
+    background:#2dd4bf;
+    color:#003333;
+    font-weight:600;
+}
+ul{
+    list-style:none;
+    max-height:220px;
+    overflow-y:auto;
+}
+li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.08);
+    margin-bottom:10px;
+}
+.badge{
+    font-size:10px;
+    padding:4px 8px;
+    border-radius:10px;
+    margin-right:8px;
+    background:#ffb703;
+    color:#000;
+}
+.completed .badge{
+    background:#22c55e;
+}
+.completed span{
+    opacity:0.7;
+}
+.delete-btn{
+    background:#ff4d6d;
+    border:none;
+    color:#fff;
+    padding:5px 8px;
+    border-radius:6px;
+    cursor:pointer;
+}
+.footer{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-top:12px;
+    color:#cfd8dc;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>My Task Manager</h1>
+    <div class="subtitle">Streamline your productivity</div>
+
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Enter a new task...">
+        <button class="add-btn" onclick="addTask()">+ Add Task</button>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('completed',this)">Completed</button>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <div class="footer">
+        <span id="count">0 tasks remaining</span>
+        <span onclick="clearAll()">Clear All</span>
+    </div>
+</div>
+<script>
+let currentFilter = "all";
+
+function addTask(){
+    const input = document.getElementById("taskInput");
+    const text = input.value.trim();
+    if(!text) return;
+
+    const li = document.createElement("li");
+    li.dataset.status = "pending";
+
+    const left = document.createElement("div");
+    left.style.display="flex";
+    left.style.alignItems="center";
+
+    const badge = document.createElement("span");
+    badge.className="badge";
+    badge.textContent="PENDING";
+
+    const span = document.createElement("span");
+    span.textContent=text;
+
+    left.appendChild(badge);
+    left.appendChild(span);
+
+    span.onclick=()=>{
+        li.classList.toggle("completed");
+        li.dataset.status = li.classList.contains("completed") ? "completed":"pending";
+        badge.textContent = li.dataset.status.toUpperCase();
+        updateCount();
+        applyFilter();
+    };
+
+    const del=document.createElement("button");
+    del.textContent="🗑";
+    del.className="delete-btn";
+    del.onclick=(e)=>{
+        e.stopPropagation();
+        li.remove();
+        updateCount();
+    };
+
+    li.appendChild(left);
+    li.appendChild(del);
+
+    document.getElementById("taskList").appendChild(li);
+    input.value="";
+    updateCount();
+    applyFilter();
+}
+
+function setFilter(type,btn){
+    currentFilter=type;
+    document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    applyFilter();
+}
+
+function applyFilter(){
+    document.querySelectorAll("#taskList li").forEach(li=>{
+        if(currentFilter==="all") li.style.display="flex";
+        else li.style.display = li.dataset.status===currentFilter ? "flex":"none";
+    });
+}
+
+function updateCount(){
+    const remaining=[...document.querySelectorAll("#taskList li")]
+        .filter(li=>li.dataset.status==="pending").length;
+    document.getElementById("count").textContent=`${remaining} task remaining`;
+}
+
+function clearAll(){
+    document.getElementById("taskList").innerHTML="";
+    updateCount();
+    alert("All task cleared");
+}
+</script>
+</body>
+</html>

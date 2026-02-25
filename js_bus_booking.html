@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Online Bus Reservation</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef2f5;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .box {
+            background: #e4dede;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .field {
+            margin-bottom: 12px;
+        }
+        input,select,button {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .error-input {
+            border: 2px solid red;
+        }
+        .error-text {
+            color: red;
+            font-size: 13px;
+            display: block;
+            height: 15px; }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px; }
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+        button {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* Seat Map Styles */
+        .seat-container {
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+        .seat {
+            height: 35px;
+            border: 2px solid #aaa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            user-select: none;
+        }
+        .seat.aisle {
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .seat.selected {
+            background: #4CAF50;
+            color: white;
+            border-color: #2E7D32;
+        }
+        .seat.booked {
+            background: #ccc;
+            cursor: not-allowed;
+            color: #666;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid #999;
+        }
+        .dot.available {
+            background: #fff;
+        }
+        .dot.selected {
+            background: #4CAF50;
+        }
+        .dot.booked {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;color:blue;">Online Bus Reservation</h2>
+    <div class="container">
+        <!-- FORM -->
+        <div class="box">
+            <h3>Source & Destination</h3>
+            <div style="display:flex;gap:15px;">
+                <div class="field">
+                    <label>From</label><br>
+                    <select id="source">
+                        <option value="">Select</option>
+                        <option>Kozhikode</option>
+                        <option>Vadakara</option>
+                        <option>Kannur</option>
+                        <option>Bangalore</option>
+                        <option>Chennai</option>
+                    </select>
+                    <span id="sourceErr" class="error-text"></span>
+                </div>
+                <div class="field">
+                    <label>To</label><br>
+                    <select id="destination">
+                        <option value="">Select</option>
+                        <option>Kozhikode</option>
+                        <option>Vadakara</option>
+                        <option>Kannur</option>
+                        <option>Bangalore</option>
+                        <option>Chennai</option>
+                    </select>
+                    <span id="destErr" class="error-text"></span>
+                </div>
+            </div>
+            <hr>
+            <h3>Journey Details</h3>
+            <div style="display:flex;gap:15px;">
+                <div class="field">
+                    <label>Date</label><br>
+                    <input type="date" id="startDate">
+                    <span id="dateErr" class="error-text"></span>
+                </div>
+                <div class="field">
+                    <label>Time</label><br>
+                    <input type="time" id="journeyTime">
+                    <span id="timeErr" class="error-text"></span>
+                </div>
+            </div>
+            <hr>
+            <hr>
+            <h3>Seat Selection</h3>
+            <div style="display:flex;gap:15px;margin-bottom:15px;">
+                <div class="field" style="flex:1;">
+                    <label>Bus Type</label><br>
+                    <select id="busType">
+                        <option value="">Select</option>
+                        <option>Sleeper</option>
+                        <option>Semi Sleeper</option>
+                    </select>
+                    <span id="typeErr" class="error-text"></span>
+                </div>
+            </div>
+            <div class="seat-container">
+                <div class="seat-grid" id="seatGrid">
+                    <!-- Generated by JS -->
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><span class="dot available"></span> Available</div>
+                    <div class="legend-item"><span class="dot selected"></span> Selected</div>
+                    <div class="legend-item"><span class="dot booked"></span> Booked</div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Selected Seats: <span id="selectedSeatsLabel">None</span></label>
+                <input type="hidden" id="seatsCount" value="0">
+                <span id="seatErr" class="error-text"></span>
+            </div>
+            <hr>
+            <h3>Personal Details</h3>
+            <div class="field">
+                <label>Name</label><br>
+                <input type="text" id="name">
+                <span id="nameErr" class="error-text"></span>
+            </div>
+            <div style="display:flex;gap:15px;">
+                <div class="field">
+                    <label>Age</label><br>
+                    <input type="number" id="age" min="6">
+                    <span id="ageErr" class="error-text"></span>
+                </div>
+                <div class="field">
+                    <label>Mobile</label><br>
+                    <input type="text" id="mobile" maxlength="10">
+                    <span id="mobileErr" class="error-text"></span>
+                </div>
+            </div>
+            <hr>
+            <h3>Available Seats: <span id="available" style="color:green;">25</span></h3>
+            <button onclick="bookTicket()" style="background:green;color:white;border:none;width:100%;">
+                Book Ticket
+            </button>
+            <p id="msg" style="text-align:center;"></p>
+            <!-- TICKET (RESULT BELOW BUTTON) -->
+            <hr>
+            <table id="ticketTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th colspan="6">Ticket Details</th>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <th>Route</th>
+                        <th>Date & Time</th>
+                        <th>Bus</th>
+                        <th>Seats</th>
+                        <th>Fare</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketBody"></tbody>
+            </table>
+            <p id="thankYouMsg" style="display:none;text-align:center;color:green;font-weight:bold;">
+                Thank you for booking with us
+            </p>
+            <div id="actionButtons" style="display:none;text-align:center;">
+                <button onclick="cancelTicket()" style="background:red;color:white;border:none;width:100%;">
+                    Cancel Ticket
+                </button>
+            </div>
+        </div> <!-- End box -->
+    </div> <!-- End container -->
+    </div>
+    <script>
+        let totalSeatsInBus = 25;
+        let bookedSeatsGlobal = new Set();
+        let currentSelection = [];
+        // Initialize Map
+        function createSeatMap() {
+            const grid = document.getElementById('seatGrid');
+            grid.innerHTML = '';
+            // 5x5 grid (2 seats, aisle, 2 seats)
+            const cols = ['A', 'B', 'Aisle', 'C', 'D'];
+            for (let row = 1; row <= 5; row++) {
+                cols.forEach(col => {
+                    const seat = document.createElement('div');
+                    if (col === 'Aisle') {
+                        seat.className = 'seat aisle';
+                    } else {
+                        const seatId = row + col;
+                        seat.className = 'seat';
+                        seat.innerText = seatId;
+                        if (bookedSeatsGlobal.has(seatId)) {
+                            seat.classList.add('booked');
+                        } else {
+                            seat.onclick = () => toggleSeat(seatId, seat);
+                        }
+                    }
+                    grid.appendChild(seat);
+                });
+            }
+        }
+        function toggleSeat(id, el) {
+            if (currentSelection.includes(id)) {
+                currentSelection = currentSelection.filter(s => s !== id);
+                el.classList.remove('selected');
+            } else {
+                if (currentSelection.length >= 5) {
+                    alert("Max 5 seats allowed");
+                    return;}
+                currentSelection.push(id);
+                el.classList.add('selected'); }
+            updateSelectionUI();
+        }
+        function updateSelectionUI() {
+            document.getElementById('selectedSeatsLabel').innerText = currentSelection.length > 0 ? currentSelection.join(', ') : "None";
+            document.getElementById('seatsCount').value = currentSelection.length;
+        }
+        function clearErrors() {
+            document.querySelectorAll(".error-text").forEach(e => e.innerText = "");
+            document.querySelectorAll("input,select").forEach(e => e.classList.remove("error-input"));
+        }
+        function clearForm() {
+            document.getElementById("name").value = "";
+            document.getElementById("age").value = "";
+            document.getElementById("mobile").value = "";
+            document.getElementById("source").value = "";
+            document.getElementById("destination").value = "";
+            document.getElementById("startDate").value = "";
+            document.getElementById("journeyTime").value = "";
+            document.getElementById("busType").value = "";
+            currentSelection = [];
+            updateSelectionUI();
+            createSeatMap();
+        }
+        function bookTicket() {
+            clearErrors();
+            let valid = true;
+            // Element declarations
+            const name = document.getElementById("name");
+            const age = document.getElementById("age");
+            const mobile = document.getElementById("mobile");
+            const source = document.getElementById("source");
+            const destination = document.getElementById("destination");
+            const startDate = document.getElementById("startDate");
+            const journeyTime = document.getElementById("journeyTime");
+            const busType = document.getElementById("busType");
+            const available = document.getElementById("available");
+            const ticketTable = document.getElementById("ticketTable");
+            const ticketBody = document.getElementById("ticketBody");
+            const thankYouMsg = document.getElementById("thankYouMsg");
+            const actionButtons = document.getElementById("actionButtons");
+            const msg = document.getElementById("msg");
+            if (name.value === "") { name.classList.add("error-input"); nameErr.innerText = "Enter name"; valid = false; }
+            if (age.value === "" || age.value < 6) { age.classList.add("error-input"); ageErr.innerText = "Age must be 6+"; valid = false; }
+            if (!/^\d{10}$/.test(mobile.value)) { mobile.classList.add("error-input"); mobileErr.innerText = "Invalid mobile"; valid = false; }
+            if (source.value === "") { source.classList.add("error-input"); sourceErr.innerText = "Select source"; valid = false; }
+            if (destination.value === "" || source.value === destination.value) { destination.classList.add("error-input"); destErr.innerText = "Invalid destination"; valid = false; }
+            if (startDate.value === "") { startDate.classList.add("error-input"); dateErr.innerText = "Select date"; valid = false; }
+            if (journeyTime.value === "") { journeyTime.classList.add("error-input"); timeErr.innerText = "Select time"; valid = false; }
+            if (busType.value === "") { busType.classList.add("error-input"); typeErr.innerText = "Select bus"; valid = false; }
+            if (currentSelection.length === 0) {
+                document.getElementById("seatErr").innerText = "Please select at least 1 seat";
+                valid = false;
+            }
+            if (!valid) return;
+            /* SEAT REDUCTION */
+            const bookedThisTime = [...currentSelection];
+            bookedThisTime.forEach(s => bookedSeatsGlobal.add(s));
+            available.innerText = totalSeatsInBus - bookedSeatsGlobal.size;
+            const fare = (busType.value === "Sleeper" ? 1200 : 950) * bookedThisTime.length;
+            ticketTable.style.display = "table";
+            thankYouMsg.style.display = "block";
+            actionButtons.style.display = "block";
+            ticketBody.innerHTML = `
+                <tr>
+                    <td>${name.value}</td>
+                    <td>${source.value} - ${destination.value}</td>
+                    <td>${startDate.value} ${journeyTime.value}</td>
+                    <td>${busType.value}</td>
+                    <td>${bookedThisTime.join(', ')}</td>
+                    <td>₹${fare}</td>
+                </tr>`;
+            msg.innerHTML = "<span class='success'>Ticket Booked Successfully</span>";
+            // Keep tracked for cancellation
+            lastBookedData = {
+                seats: bookedThisTime,
+                count: bookedThisTime.length
+            }; }
+        let lastBookedData = null;
+        function cancelTicket() {
+            const available = document.getElementById("available");
+            const ticketTable = document.getElementById("ticketTable");
+            const thankYouMsg = document.getElementById("thankYouMsg");
+            const actionButtons = document.getElementById("actionButtons");
+            const msg = document.getElementById("msg");
+            if (lastBookedData) {
+                lastBookedData.seats.forEach(s => bookedSeatsGlobal.delete(s));
+                available.innerText = totalSeatsInBus - bookedSeatsGlobal.size;
+                lastBookedData = null;
+            }
+            ticketTable.style.display = "none";
+            thankYouMsg.style.display = "none";
+            actionButtons.style.display = "none";
+            currentSelection = [];
+            updateSelectionUI();
+            createSeatMap();
+            msg.innerHTML = "<span class='success'>Ticket Cancelled Successfully</span>";
+        }
+        // Initial Map Load
+        createSeatMap();
+    </script>
+</body>
+</html>
